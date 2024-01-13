@@ -48,11 +48,11 @@ Move to the src folder of the workspace:
 ```
 - First we can lone the package assignment_2_2023 which provides an initial implementation of the robot environment : 
 ```python
-git clone https://github.com/CarmineD8/assignment_2_2022
+git clone https://github.com/CarmineD8/assignment_2_2023
 ```
 - Clone the package of my solution:
 ```python
-git clone https://github.com
+git clone https://github.com/HodaMn/ResearchTrack1_Assignment2.git
 ```
 - Again we use:
 ```python
