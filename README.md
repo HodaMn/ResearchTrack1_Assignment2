@@ -22,7 +22,7 @@ The purpose of this assignment is to develop a ROS package with 3 ROS nodes that
 To run the code, we need these steps : 
 
 - A ROS Noetic
- We also open the terminal and in the bashrc file we write 
+- We also open the terminal and in the bashrc file we write 
  ```python
  source /opt/ros/noetic/setup.bash
  ```
@@ -41,7 +41,7 @@ catkin_make
 ```python
 source ~/catkin_ws/devel/setup.bash
 ```
-Move to the src folder of the workspace:
+- Move to the src folder of the workspace:
 ```python
  cd catkin_ws/src   
 ```
@@ -101,8 +101,8 @@ Pseudocode for node a
 2. Define global variables for pose and twist
 
 3. Define callback function for `/odom` topic:
-     Extract position and velocity information from the message
-     Create an Info message and publish it to `/bot_info` topic
+    1. Extract position and velocity information from the message
+    2. Create an Info message and publish it to `/bot_info` topic
 
 4. Define function to publish target coordinates:
     1. Create a Point message with the given coordinates
