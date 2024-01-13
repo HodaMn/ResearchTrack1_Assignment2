@@ -61,7 +61,7 @@ catkin_make
 ```
 - Now, we can run the whole project by running the launch file:
 ```python
-   roslaunch Assignment_2 assignment_2.launch
+   roslaunch assignment_2_2023 assignment1.launch
 ```
 - To call node b, write this in the root workspace folder:
 ```python
