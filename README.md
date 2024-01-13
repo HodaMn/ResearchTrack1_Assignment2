@@ -2,18 +2,18 @@
 The assignment is about the development of a package which has 3 nodes and interacts with a simulation of a simple robot in Gazebo. 
 The nodes are:
 
-- node a: 
- A node that implements an action client, allowing the user to set a target (x, y) or to cancel it. Try to use the feedback/status of the action server to know when the target has been reached. The node also publishesthe robot position and velocity as a custom message (x,y, vel_x, vel_z), by relying on the values published on the topic/odom.  
+- node A:
+- A node that implements an action client, allowing the user to set a target (x, y) or to cancel it. Try to use the feedback/status of the action server to know when the target has been reached. The node also publishesthe robot position and velocity as a custom message (x,y, vel_x, vel_z), by relying on the values published on the topic/odom.  
 
-- node b:
- A service node that, when called, returnsthe coordinates of the last target sent by the user
+- node B:
+- A service node that, when called, returnsthe coordinates of the last target sent by the user
 
-- node c: 
- Another service node that subscribes to the robot's position and velocity (using the custom message) and implements a server to retrieve the distance of the robot from the target and the robot's average speed.
+- node C:
+- Another service node that subscribes to the robot's position and velocity (using the custom message) and implements a server to retrieve the distance of the robot from the target and the robot's average speed.
 
 
 - Launch file
- There is also an implemented **.launch** file that starts the whole simulation, and also shows the nodes a and c on separate windows in the output.
+- There is also an implemented **.launch** file that starts the whole simulation, and also shows the nodes a and c on separate windows in the output.
 
 
 # Installing and Running
@@ -30,7 +30,6 @@ To run the code, we need these steps :
 - Run the ROS core by executing this command in terminal:
 ```python
 roscore
-
 ```
 - Creating a ROS worksapace:
 ```python
