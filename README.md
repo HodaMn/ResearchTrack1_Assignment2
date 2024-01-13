@@ -2,17 +2,17 @@
 The assignment is about the development of a package which has 3 nodes and interacts with a simulation of a simple robot in Gazebo. 
 The nodes are:
 
-- node A:
+ node A:
 - A node that implements an action client, allowing the user to set a target (x, y) or to cancel it. Try to use the feedback/status of the action server to know when the target has been reached. The node also publishesthe robot position and velocity as a custom message (x,y, vel_x, vel_z), by relying on the values published on the topic/odom.  
 
-- node B:
+ node B:
 - A service node that, when called, returnsthe coordinates of the last target sent by the user
 
-- node C:
+ node C:
 - Another service node that subscribes to the robot's position and velocity (using the custom message) and implements a server to retrieve the distance of the robot from the target and the robot's average speed.
 
 
-- Launch file
+ Launch file
 - There is also an implemented **.launch** file that starts the whole simulation, and also shows the nodes a and c on separate windows in the output.
 
 
@@ -101,8 +101,8 @@ Pseudocode for node a
 2. Define global variables for pose and twist
 
 3. Define callback function for `/odom` topic:
-    1. Extract position and velocity information from the message
-    2. Create an Info message and publish it to `/bot_info` topic
+     Extract position and velocity information from the message
+     Create an Info message and publish it to `/bot_info` topic
 
 4. Define function to publish target coordinates:
     1. Create a Point message with the given coordinates
