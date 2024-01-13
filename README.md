@@ -101,36 +101,36 @@ Pseudocode for node a
 
 2. Define global variables for pose and twist
 
-3. Define callback function for '/odom' topic:
+3. Define callback function for `/odom` topic:
     1. Extract position and velocity information from the message
-    2. Create an Info message and publish it to '/bot_info' topic
+    2. Create an Info message and publish it to `/bot_info` topic
 
 4. Define function to publish target coordinates:
     1. Create a Point message with the given coordinates
-    2. Publish the Point message to '/tgt' topic
+    2. Publish the Point message to `/tgt` topic
 
-5. Define service callback function for 'goal_info' service:
+5. Define service callback function for `goal_info` service:
     1. Return the counts of target reached and target canceled
 
 6. Define function to set target coordinates as rosparams:
-    1. Set the target coordinates as rosparams '/target_x' and '/target_y'
+    1. Set the target coordinates as rosparams `/target_x` and `/target_y`
 
 7. Define the main function:
     1. Initialize ROS node and necessary elements
-    2. Create an action client for '/reaching_goal' action server
-    3. Create publishers and subscribers for '/bot_info', '/tgt', and '/odom'
+    2. Create an action client for `/reaching_goal` action server
+    3. Create publishers and subscribers for `/bot_info`, `/tgt`, and `/odom`
     4. Wait for the action server to be ready
     5. Get initial target coordinates using rosparam
     6. Publish initial target coordinates
     7. Prompt user for updated target coordinates
     8. Set updated target parameters using rosparam
     9. Publish updated target coordinates
-    10. Create a 'PlanningGoal' object with the updated target coordinates
+    10. Create a `PlanningGoal` object with the updated target coordinates
     11. Send the goal request to the action server
     12. Wait for the goal to be reached
     13. Print the final state of target reached and target canceled
 
-8. If the script is the main program, call the main function
+8. If the script is the main program, call the `main` function
 
 
 
