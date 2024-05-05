@@ -36,10 +36,8 @@ node_b module
 node_c module 
 =========================
 .. automodule:: scripts.node_c
-   :imported-members:
    :members:
-   :undoc-members:
-   :show-inheritance:
+   
 
 
 
