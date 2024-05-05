@@ -2,6 +2,7 @@
 import sys
 import rospy
 import actionlib
+import threading
 import time
 import actionlib.msg
 import assignment_2_2023.msg
@@ -9,64 +10,51 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Twist, PoseStamped
 from assignment_2_2023.msg import PlanningAction, PlanningGoal
 from assignment_2_2023.msg import Info
-from assignment_2_2023.srv import target
+from assignment_2_2023.srv import target, targetResponse
 
-# Global variables
-pose_ = Pose()
-twist_ = Twist()
+# Global Variables
+target_reached = 0
+target_canceled = 0
+current_goal = None
+stop_thread = None
 
+# Odometry callback function to publish robot information
 def clbk_odom(msg):
     """
     Callback function for '/odom' topic.
     Updates the position and velocity information.
     """
-    global pub_info
+    pub_info.publish(Info(
+        x=msg.pose.pose.position.x,
+        y=msg.pose.pose.position.y,
+        vel_x=msg.twist.twist.linear.x,
+        vel_y=msg.twist.twist.linear.y
+    ))
 
-    x_ = msg.pose.pose.position.x
-    y_ = msg.pose.pose.position.y
-    vx_ = msg.twist.twist.linear.x
-    vy_ = msg.twist.twist.linear.y
-
-    msg_info = Info()
-
-    msg_info.x = x_
-    msg_info.y = y_
-    msg_info.vel_x = vx_
-    msg_info.vel_y = vy_
-
-    if not rospy.is_shutdown():
-        pub_info.publish(msg_info)
-
-def ltk_tgt(x, y):
-    """
-    Publishes the target coordinates.
-    """
-    global pub_target
-
-    target = Point()
-
-    target.x = x
-    target.y = y
-    target.z = 0
-
-    pub_target.publish(target)
-
+# Service callback to get information about goals
 def get_info_goal(req):
     """
     Service callback function for 'goal_info' service.
     Returns the target reached and target canceled counts.
     """
-    global target_reached, target_canceled, service
-
     return targetResponse(target_reached, target_canceled)
 
-def set_target_params(x, y):
-    """
-    Sets the target coordinates as rosparams.
-    """
-    rospy.set_param('/target_x', x)
-    rospy.set_param('/target_y', y)
 
+# Function to handle user input for stopping or exiting
+def check_for_stop(client):
+    global target_canceled
+    while not rospy.is_shutdown():
+        command = input("Enter a command (type 'stop' to cancel the current goal or 'exit' to quit): ")
+        if command.lower() == "stop":
+            client.cancel_goal()
+            target_canceled += 1
+            print("Goal canceled.")
+            break
+        elif command.lower() == "exit":
+            rospy.signal_shutdown("Exiting program")
+            break
+
+# Main function to handle ROS node initialization and goal management
 def main():
     """
     Main function of node_a.
@@ -75,69 +63,58 @@ def main():
     - Handles user input for canceling the target.
     - Prints the target reached and target canceled counts.
     """
-    global pub_info, target_reached, target_canceled, service, pub_target
+    
+    global pub_info, current_goal, target_reached, target_canceled, stop_thread
 
-    # Initialization of elements
-    pose = PoseStamped()
-    target_reached = 0
-    target_canceled = 0
+    # Initialize ROS node
+    rospy.init_node("node_a")
 
-    # Init node
-    rospy.init_node('node_a')
+    # Set up publishers, subscribers, and services
+    pub_info = rospy.Publisher("/bot_info", Info, queue_size=1)
+    rospy.Subscriber("/odom", Odometry, clbk_odom)
+    rospy.Service("goal_info", target, get_info_goal)
 
-    # Create a new client
-    client = actionlib.SimpleActionClient('/reaching_goal', assignment_2_2023.msg.PlanningAction)
-
-    # Publish
-    pub_info = rospy.Publisher('/bot_info', Info, queue_size=1)
-    pub_target = rospy.Publisher('/tgt', Point, queue_size=1)
-
-    # Subscribe to /odom
-    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
-    service = rospy.Service('goal_info', target, get_info_goal)
-
-    # Wait for the server ready
+    # Create Action Client and wait for the Action Server
+    client = actionlib.SimpleActionClient("/reaching_goal", PlanningAction)
     client.wait_for_server()
 
-    # Get target coordinates using rosparam
-    x_goal = rospy.get_param('/target_x', default=1.0)
-    y_goal = rospy.get_param('/target_y', default=2.0)
-    
-    ltk_tgt(x_goal, y_goal)
-    pose.pose.position.x = x_goal
-    pose.pose.position.y = y_goal
-    pose.pose.position.z = 0
-
-    # User input for target coordinates
-    while True:
+    while not rospy.is_shutdown():
+        # User input for goal coordinates
         try:
-            x_goal_user = float(input("Enter x-coordinate for the target: "))
-            y_goal_user = float(input("Enter y-coordinate for the target: "))
-            break
+            x_goal = float(input("Enter x-coordinate for the target: "))
+            y_goal = float(input("Enter y-coordinate for the target: "))
         except ValueError:
-            print("Please enter valid numbers.")
+            print("Invalid input, please enter numerical values.")
+            continue
 
-    # Set target parameters using rosparam
-    set_target_params(x_goal_user, y_goal_user)
+        # Create and send the goal
+        pose = PoseStamped()
+        pose.pose.position.x = x_goal
+        pose.pose.position.y = y_goal
+        pose.pose.position.z = 0
+        goal = PlanningGoal(target_pose=pose)
 
-    ltk_tgt(x_goal_user, y_goal_user)
-    pose.pose.position.x = x_goal_user
-    pose.pose.position.y = y_goal_user
-    pose.pose.position.z = 0
+        client.send_goal(goal)
+        current_goal = goal
 
-    # Create the object PlanningGoal and assign the position goal
-    goal = assignment_2_2023.msg.PlanningGoal(target_pose=pose)
+        # Start or restart the stop thread
+        if stop_thread is None or not stop_thread.is_alive():
+            stop_thread = threading.Thread(target=check_for_stop, args=(client,))
+            stop_thread.start()
 
-    # Send the goal request
-    client.send_goal(goal)
+        # Wait for the goal result
+        client.wait_for_result()
 
-    # Wait for the goal to be reached
-    client.wait_for_result()
-
-    # Example: printing the final counts
-    print("Target Reached: ", target_reached, flush=True)
-    print("Target Canceled: ", target_canceled, flush=True)
+        # Check if the goal was achieved or canceled
+        if client.get_state() == actionlib.GoalStatus.SUCCEEDED:
+            target_reached += 1
+            print("Goal reached!")
+        elif client.get_state() == actionlib.GoalStatus.PREEMPTED:
+            print("Goal preempted.")
+        elif client.get_state() == actionlib.GoalStatus.ABORTED:
+            print("Goal aborted.")
+        
+        print(f"Targets Reached: {target_reached}, Targets Canceled: {target_canceled}")
 
 if __name__ == "__main__":
     main()
-
