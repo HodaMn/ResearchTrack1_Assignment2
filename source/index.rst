@@ -27,7 +27,12 @@ node_a module
 =========================
 .. automodule:: scripts.node_a 
    :members:
-   
+
+node_b module
+===========================
+.. automodule:: scripts.node_b
+   :members:
+
 node_c module 
 =========================
 .. automodule:: scripts.node_c
